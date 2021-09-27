@@ -14,7 +14,7 @@ MonoBehaviour:
   id: BooleanNetwork
   title: Boolean Network
   author: tepel
-  description: 
-  version: 0.0.1
+  description: 'Manual: https://ktane.timwi.de/HTML/Boolean%20Network.html'
+  version: 1.0.0
   outputFolder: E:\Steam\steamapps\common\Keep Talking and Nobody Explodes\mods
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: 5ab775583b8202043940806e6efefe2a, type: 3}
