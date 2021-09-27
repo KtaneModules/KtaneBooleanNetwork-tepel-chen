@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace BooleanNetwork
@@ -23,7 +20,6 @@ namespace BooleanNetwork
 
         [SerializeField]
         internal Transform[] Buttons;
-
 
         public GameObject Generate(int from, int to, bool isInverse, Transform parent)
         {
@@ -61,7 +57,7 @@ namespace BooleanNetwork
                 0.0153f,
                 (Buttons[from].localPosition.z + Buttons[to].localPosition.z) / 2
             );
-            transform.rotation = Quaternion.Euler(-90, 0, (from + to + (from - to > 0 ? 3 : -3)) % 12 * 30);
+            transform.localRotation = Quaternion.Euler(-90, 0, (from + to + (from - to > 0 ? 3 : -3)) % 12 * 30);
             transform.localScale = new Vector3(1, 1, 1);
 
             return clone;
