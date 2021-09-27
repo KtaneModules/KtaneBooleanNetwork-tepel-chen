@@ -48,7 +48,7 @@ namespace BooleanNetwork
                     2 => ArrowMidT,
                     4 => ArrowMidT,
                     5 => ArrowShortT,
-                    _ => ArrowLongF,
+                    _ => ArrowLongT,
                 };
             }
 
