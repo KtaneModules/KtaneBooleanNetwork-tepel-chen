@@ -63,20 +63,20 @@ namespace BooleanNetwork
 
             if (splitted[0] == "submit" && splitted.Length == 1)
             {
-                Module.Buttons[0].OnInteract();
-                yield return new WaitForSeconds(0.10f);
-                Module.Buttons[0].OnInteract();
+                yield return new KMSelectable[] { Module.Buttons[0], Module.Buttons[0] };
                 yield break;
             }
 
             if ((splitted[0] == "submit" || splitted[0] == "press") && splitted.Length == 2 && rxDigits.IsMatch(splitted[1]))
             {
                 yield return HandleDigits(splitted[1]);
+                yield break;
             }
 
             if (splitted.Length == 1 && rxDigits.IsMatch(splitted[0]))
             {
                 yield return HandleDigits(splitted[0]);
+                yield break;
             }
 
 
@@ -88,12 +88,11 @@ namespace BooleanNetwork
 
         private IEnumerator HandleDigits(string v)
         {
-            foreach (char c in v)
-            {
-                Debug.Log(c);
-                Module.Buttons[c - '1'].OnInteract();
-                yield return new WaitForSeconds(0.10f);
-            }
+            yield return v.Select(c => Module.Buttons[c - '1']).ToArray();
+
+            if (Module.isCorrect) yield return Solve;
+            else yield return Strike;
+            
         }
 
         static readonly Regex rxDigits = new Regex(@"^[1-6]{1,6}$");

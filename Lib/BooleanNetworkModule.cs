@@ -60,7 +60,6 @@ namespace BooleanNetwork
 
         private void SetColorblind()
         {
-            Log($"{CBText.Length}, {network.network.AggregatorIdx.Count()}");
             for(int i = 0; i < 6; i++)
             {
                 CBText[i].gameObject.SetActive(true);
@@ -79,6 +78,8 @@ namespace BooleanNetwork
                 CBText[i].gameObject.SetActive(false);
             }
         }
+
+        internal bool isCorrect => !Enumerable.Range(0, 6).Any(i => network.GetState(3)[i] ^ input.Contains(i));
 
         protected override void Update()
         {
@@ -145,16 +146,8 @@ namespace BooleanNetwork
         private void Submit()
         {
             var answer = network.GetState(3);
-            for(int i = 0; i < 6; i++)
-            {
-                if(answer[i] ^ input.Contains(i))
-                {
-                    HandleStrike();
-                    return;
-                }
-            }
-
-            HandleSolve();
+            if (isCorrect) HandleSolve();
+            else HandleStrike();
         }
 
         private void HandleSolve()
