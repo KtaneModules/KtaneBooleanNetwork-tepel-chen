@@ -29,7 +29,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="KeepCoding">
+    <Reference Include="KeepCoding, Version=10.1.0.0, Culture=neutral, PublicKeyToken=0f872098ab6641d2, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Assets\Plugins\Managed\KeepCoding.dll</HintPath>
     </Reference>
     <Reference Include="KtaneUtils">
@@ -105,9 +106,9 @@
     <Compile Include="KMColorblindMode.cs" />
     <Compile Include="KMRuleSeedable.cs" />
     <Compile Include="KtaneModule.cs" />
-    <Compile Include="ModConfig.cs" />
     <Compile Include="ModdedAPI.cs" />
     <Compile Include="ReflectionHelper.cs" />
+    <Compile Include="TPBooleanNetworkModule.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

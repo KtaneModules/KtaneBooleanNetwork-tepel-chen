@@ -60,6 +60,8 @@ namespace BooleanNetwork
             transform.localRotation = Quaternion.Euler(-90, 0, (from + to + (from - to > 0 ? 3 : -3)) % 12 * 30);
             transform.localScale = new Vector3(1, 1, 1);
 
+            clone.SetActive(true);
+
             return clone;
         }
 

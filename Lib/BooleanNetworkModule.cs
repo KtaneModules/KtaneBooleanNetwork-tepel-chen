@@ -22,13 +22,16 @@ namespace BooleanNetwork
         internal Material[] ButtonColorMaterial;
         [SerializeField]
         internal Material[] ButtonStateMaterial;
+        [SerializeField]
+        internal TextMesh[] CBText;
 
         private readonly List<GameObject> arrows = new List<GameObject>();
         private List<int> input = new List<int>();
         private bool isPressed = false;
         private float lastPressed;
-        private BooleanNetwork network;
-        private bool isStrikeAnimation = false;
+        internal bool isStrikeAnimation = false;
+
+        internal BooleanNetwork network;
 
 
         protected override void Start()
@@ -51,7 +54,30 @@ namespace BooleanNetwork
                 ButtonStates[i].material = ButtonStateMaterial[network.GetState(0)[i] ? 0 : 1];
                 Buttons[i].OnInteract += () => { ButtonInteractHandler(j); return false; };
             }
+            OnColorblindChanged(IsColorblind);
 
+        }
+
+        private void SetColorblind()
+        {
+            Log($"{CBText.Length}, {network.network.AggregatorIdx.Count()}");
+            for(int i = 0; i < 6; i++)
+            {
+                CBText[i].gameObject.SetActive(true);
+                CBText[i].text = (network.network.AggregatorIdx[i]) switch {
+                    0 => "R",
+                    1 => "G",
+                    2 => "B",
+                    _ => "?"
+                };
+            }
+        }
+        private void RemoveColorblind()
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                CBText[i].gameObject.SetActive(false);
+            }
         }
 
         protected override void Update()
@@ -62,6 +88,13 @@ namespace BooleanNetwork
             {
                 Submit();
             }
+        }
+
+        public override void OnColorblindChanged(bool isEnabled)
+        {
+            base.OnColorblindChanged(isEnabled);
+            if (isEnabled) SetColorblind();
+            else RemoveColorblind();
         }
 
         private IEnumerator FlickerArrows()
@@ -97,6 +130,16 @@ namespace BooleanNetwork
             ButtonEffect(Buttons[key], 0.2f, KMSoundOverride.SoundEffect.BigButtonPress);
             lastPressed = Time.time;
             isPressed = true;
+        }
+
+        internal void ResetInput()
+        {
+            foreach (int i in input)
+            {
+                Buttons[i].transform.localPosition += Vector3.up * 0.008f;
+            }
+            input = new List<int>();
+            isPressed = false;
         }
 
         private void Submit()
@@ -153,6 +196,7 @@ namespace BooleanNetwork
             {
                 arrow.GetComponent<MeshRenderer>().material.color = on;
             }
+            ResetInput();
         }
 
         private IEnumerator StrikeAnimation()
@@ -175,12 +219,7 @@ namespace BooleanNetwork
                 yield return new WaitForSeconds(.05f);
             }
             yield return new WaitForSeconds(.05f);
-            foreach (int i in input)
-            {
-                Buttons[i].transform.localPosition += Vector3.up * 0.008f;
-            }
-            input = new List<int>();
-            isPressed = false;
+            ResetInput();
 
             isStrikeAnimation = false;
             yield return null;
