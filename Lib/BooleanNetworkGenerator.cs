@@ -23,8 +23,8 @@ namespace BooleanNetwork
                 .Select(uedge => UnityEngine.Random.Range(0, 2) == 0 ? uedge : new Tuple<int, int>(uedge.Item2, uedge.Item1))
                 .Take(UnityEngine.Random.Range(3,6)));
 
-            List<BooleanNetwork.NetworkEdge> bnedges = edges.Select(edge => new BooleanNetwork.NetworkEdge(edge.Item1, edge.Item2, UnityEngine.Random.Range(0, 2) == 0)).ToList();
-            List<int> aggregators = Enumerable.Range(0, 6).Select(i => UnityEngine.Random.Range(0, BooleanNetwork.AggregatorList.Length)).ToList();
+            List<NetworkEdge> bnedges = edges.Select(edge => new NetworkEdge(edge.Item1, edge.Item2, UnityEngine.Random.Range(0, 2) == 0)).ToList();
+            List<int> aggregators = Enumerable.Range(0, 6).Select(i => UnityEngine.Random.Range(0, Network.AggregatorList.Length)).ToList();
 
             return new BooleanNetwork(node_num, bnedges, aggregators);
         }

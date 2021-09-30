@@ -8,78 +8,28 @@ using UnityEngine;
 namespace BooleanNetwork
 {
 
-    public class BooleanNetworkModule : KtaneModule
+    public class BooleanNetworkModule : BooleanNetworkModuleBase
     {
-        [SerializeField]
-        internal KMSelectable[] Buttons;
-        [SerializeField]
-        internal MeshRenderer[] ButtonStates;
-        [SerializeField]
-        internal MeshRenderer[] ButtonColor;
-        [SerializeField]
-        internal ArrowComponent ArrowComponent;
-        [SerializeField]
-        internal Material[] ButtonColorMaterial;
-        [SerializeField]
-        internal Material[] ButtonStateMaterial;
-        [SerializeField]
-        internal TextMesh[] CBText;
 
-        private readonly List<GameObject> arrows = new List<GameObject>();
         private List<int> input = new List<int>();
         private bool isPressed = false;
         private float lastPressed;
-        internal bool isStrikeAnimation = false;
 
-        internal BooleanNetwork network;
+        internal BooleanNetwork booleanNetwork;
 
 
-        protected override void Start()
+        internal override Network GetNetwork()
         {
-            base.Start();
-            network = BooleanNetworkGenerator.GenerateNetwork(6);
-            network.network.Log(this);
-            network.SetInitState(BooleanNetworkGenerator.GenerateState(6));
-            network.Log(this, 3);
-            
-            foreach(var edge in network.network.Edges)
-            {
-                arrows.Add(ArrowComponent.Generate(edge.From, edge.To, edge.IsInv, transform));
-            }
-            StartCoroutine(FlickerArrows());
-            for(int i = 0; i < 6; i++)
-            {
-                var j = i;
-                ButtonColor[i].material = ButtonColorMaterial[network.network.AggregatorIdx[i]];
-                ButtonStates[i].material = ButtonStateMaterial[network.GetState(0)[i] ? 0 : 1];
-                Buttons[i].OnInteract += () => { ButtonInteractHandler(j); return false; };
-            }
-            OnColorblindChanged(IsColorblind);
+            booleanNetwork = BooleanNetworkGenerator.GenerateNetwork(6);
+            booleanNetwork.network.Log(this);
+            booleanNetwork.SetInitState(BooleanNetworkGenerator.GenerateState(6));
+            booleanNetwork.Log(this, 3);
+
+            return booleanNetwork.network;
 
         }
 
-        private void SetColorblind()
-        {
-            for(int i = 0; i < 6; i++)
-            {
-                CBText[i].gameObject.SetActive(true);
-                CBText[i].text = (network.network.AggregatorIdx[i]) switch {
-                    0 => "R",
-                    1 => "G",
-                    2 => "B",
-                    _ => "?"
-                };
-            }
-        }
-        private void RemoveColorblind()
-        {
-            for (int i = 0; i < 6; i++)
-            {
-                CBText[i].gameObject.SetActive(false);
-            }
-        }
-
-        internal bool isCorrect => !Enumerable.Range(0, 6).Any(i => network.GetState(3)[i] ^ input.Contains(i));
+        internal bool IsCorrect => !Enumerable.Range(0, 6).Any(i => booleanNetwork.GetState(3)[i] ^ input.Contains(i));
 
         protected override void Update()
         {
@@ -91,32 +41,7 @@ namespace BooleanNetwork
             }
         }
 
-        public override void OnColorblindChanged(bool isEnabled)
-        {
-            base.OnColorblindChanged(isEnabled);
-            if (isEnabled) SetColorblind();
-            else RemoveColorblind();
-        }
-
-        private IEnumerator FlickerArrows()
-        {
-            while(!IsSolved)
-            {
-                if (isStrikeAnimation)
-                {
-                    yield return null;
-                    continue;
-                }
-                var color = new Color32(0, (byte)Random.Range(170, 255), (byte)Random.Range(0, 40), 255);
-                foreach (var arrow in arrows)
-                {
-                    arrow.GetComponent<MeshRenderer>().material.color = color;
-                }
-                yield return new WaitForSeconds(Random.Range(0.05f,0.25f));
-            }
-        }
-
-        private void ButtonInteractHandler(int key)
+        internal override void ButtonInteractHandler(int key)
         {
             if (isStrikeAnimation) return;
             if(input.Contains(key))
@@ -132,8 +57,12 @@ namespace BooleanNetwork
             lastPressed = Time.time;
             isPressed = true;
         }
+        internal override int GetMaterialIndex(int i)
+        {
+            return booleanNetwork.GetState(0)[i] ? 0 : 1;
+        }
 
-        internal void ResetInput()
+        internal override void ResetInput()
         {
             foreach (int i in input)
             {
@@ -145,8 +74,7 @@ namespace BooleanNetwork
 
         private void Submit()
         {
-            var answer = network.GetState(3);
-            if (isCorrect) HandleSolve();
+            if (IsCorrect) HandleSolve();
             else HandleStrike();
         }
 
@@ -159,63 +87,15 @@ namespace BooleanNetwork
 
         private void HandleStrike()
         {
-            Strike($"Strike! Expected: {string.Join(", ", network.GetState(3).Select(i => i.ToString()).ToArray())}, received {string.Join(", ", Enumerable.Range(0, 6).Select(i => input.Contains(i).ToString()).ToArray())}.");
+            Strike($"Strike! Expected: {string.Join(", ", booleanNetwork.GetState(3).Select(i => i.ToString()).ToArray())}, received {string.Join(", ", Enumerable.Range(0, 6).Select(i => input.Contains(i).ToString()).ToArray())}.");
 
             StartCoroutine(StrikeAnimation());
         }
 
-        private IEnumerator SolveAnimation()
+        public override void OnColorblindChanged(bool b)
         {
-            arrows.Shuffle();
-
-            var off = new Color32(12, 12, 12, 255);
-            var on = new Color32(0, 255, 40, 255);
-
-            foreach (GameObject arrow in arrows)
-            {
-                arrow.GetComponent<MeshRenderer>().material.color = off;
-            }
-            for (int i = 0; i < 3; i++)
-            { 
-                foreach (GameObject arrow in arrows)
-                {
-                    arrow.GetComponent<MeshRenderer>().material.color = on;
-                    yield return new WaitForSeconds(.05f);
-                    arrow.GetComponent<MeshRenderer>().material.color = off;
-                }
-            }
-
-            foreach (GameObject arrow in arrows)
-            {
-                arrow.GetComponent<MeshRenderer>().material.color = on;
-            }
-            ResetInput();
+            base.OnColorblindChanged(b);
         }
 
-        private IEnumerator StrikeAnimation()
-        {
-            isStrikeAnimation = true;
-
-            var off = new Color32(12, 12, 12, 255);
-            var on = new Color32(224, 0, 0, 255);
-            for (int i = 0; i < 5; i++)
-            {
-                foreach (GameObject arrow in arrows)
-                {
-                    arrow.GetComponent<MeshRenderer>().material.color = on;
-                }
-                yield return new WaitForSeconds(.05f);
-                foreach (GameObject arrow in arrows)
-                {
-                    arrow.GetComponent<MeshRenderer>().material.color = off;
-                }
-                yield return new WaitForSeconds(.05f);
-            }
-            yield return new WaitForSeconds(.05f);
-            ResetInput();
-
-            isStrikeAnimation = false;
-            yield return null;
-        }
     }
 }

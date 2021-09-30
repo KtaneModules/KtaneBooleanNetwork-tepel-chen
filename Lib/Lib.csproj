@@ -99,6 +99,10 @@
     <Compile Include="BooleanNetwork.cs" />
     <Compile Include="BooleanNetworkGenerator.cs" />
     <Compile Include="BooleanNetworkModule.cs" />
+    <Compile Include="BooleanNetworkModuleBase.cs" />
+    <Compile Include="Network.cs" />
+    <Compile Include="ReverseBooleanNetwork.cs" />
+    <Compile Include="ReverseBooleanNetworkModule.cs" />
     <Compile Include="Easing.cs" />
     <Compile Include="GeneralExtensions.cs" />
     <Compile Include="KMBombInfoExtensions.cs" />
@@ -108,6 +112,7 @@
     <Compile Include="KtaneModule.cs" />
     <Compile Include="ModdedAPI.cs" />
     <Compile Include="ReflectionHelper.cs" />
+    <Compile Include="TPReverseBooleanNetworkModule.cs" />
     <Compile Include="TPBooleanNetworkModule.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

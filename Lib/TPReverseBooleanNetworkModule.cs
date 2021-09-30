@@ -1,4 +1,5 @@
-﻿using KeepCoding;
+﻿
+using KeepCoding;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace BooleanNetwork
 {
-    public class TPBooleanNetworkModule : TPScript<BooleanNetworkModule>
+    internal class TPReverseBooleanNetworkModule : TPScript<ReverseBooleanNetworkModule>
     {
 
         public override IEnumerator ForceSolve()
@@ -17,23 +18,13 @@ namespace BooleanNetwork
             yield return null;
             Module.ResetInput();
             while (Module.isStrikeAnimation) yield return true;
-            var answers = Module.booleanNetwork.GetState(3);
-            if (answers.All(b => !b))
-            {
-                Module.Buttons[0].OnInteract();
-                yield return new WaitForSeconds(0.10f);
-                Module.Buttons[0].OnInteract();
-                yield return UntilSolve();
-                yield break;
-            }
+            var counts = Module.rbn.GetInitStateCount(null);
+            var order = Enumerable.Range(0, 6).ToList();
+            order.Sort((i, j) => counts[i] - counts[j]);
 
-            for (int i = 0; i < 6; i++)
+            foreach (int i in order)
             {
-                if(answers[i])
-                {
-                    Module.Buttons[i].OnInteract();
-                    yield return new WaitForSeconds(0.10f);
-                }
+                Module.Buttons[i].OnInteract();
             }
             yield return UntilSolve();
         }
@@ -61,12 +52,6 @@ namespace BooleanNetwork
                 yield break;
             }
 
-            if (splitted[0] == "submit" && splitted.Length == 1)
-            {
-                yield return new KMSelectable[] { Module.Buttons[0], Module.Buttons[0] };
-                yield break;
-            }
-
             if ((splitted[0] == "submit" || splitted[0] == "press") && splitted.Length == 2 && rxDigits.IsMatch(splitted[1]))
             {
                 yield return HandleDigits(splitted[1]);
@@ -88,13 +73,14 @@ namespace BooleanNetwork
 
         private IEnumerator HandleDigits(string v)
         {
+            if(v.Distinct().Count() != v.Count()) yield return SendToChatError("Digit must be all unique");
             yield return v.Select(c => Module.Buttons[c - '1']).ToArray();
 
-            if (Module.IsCorrect) yield return Solve;
+            if (Module.IsCorrect()) yield return Solve;
             else yield return Strike;
             
         }
 
-        static readonly Regex rxDigits = new Regex(@"^[1-6]{1,6}$");
+        static readonly Regex rxDigits = new Regex(@"^[1-6]{6}$");
     }
 }
